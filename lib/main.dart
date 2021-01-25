@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
 void main() => runApp(MyApp());
 
@@ -124,6 +130,10 @@ class MyCustomForm extends StatefulWidget {
 
 class MyCustomFormStatement extends State<MyCustomForm> {
   final _formKey = GlobalKey<FormState>();
+  TextEditingController emailController = new TextEditingController();
+  TextEditingController passwordController = new TextEditingController();
+  bool processing = false;
+  bool signin = true;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +145,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               TextFormField(
+                controller: emailController,
                 textAlign: TextAlign.center,
                 validator: (value) {
                   if (value.isEmpty) {
@@ -147,6 +158,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
                 ),
               ),
               TextFormField(
+                controller: passwordController,
                 textAlign: TextAlign.center,
                 validator: (value) {
                   if (value.isEmpty) {
@@ -171,20 +183,53 @@ class MyCustomFormStatement extends State<MyCustomForm> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.black87,
-        onPressed: () {
-          if (_formKey.currentState.validate()) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Home(),
-              ),
-            );
-          }
-        },
+        onPressed: () => userSignIn(),
         tooltip: 'Zaloguj',
         child: Icon(Icons.arrow_right_rounded, size: 50),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
+  }
+
+  void changeState() {
+    if (signin) {
+      setState(() {
+        signin = false;
+      });
+    } else
+      setState(() {
+        signin = true;
+      });
+  }
+
+  void userSignIn() async {
+    setState(() {
+      processing = true;
+    });
+    var url = "http://127.0.0.1/train_app_login/train_app_login.php";
+    var data = {
+      "email": emailController.text,
+      "pass": passwordController.text,
+    };
+
+    var res = await http.post(url, body: data);
+    if (jsonDecode(res.body) == "xxx") {
+      print("nie ma takiego konta");
+    }
+    if (jsonDecode(res.body) == "false") {
+      print("wprowadziłeś złe hasło");
+    } else {
+      if (_formKey.currentState.validate()) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Home(),
+          ),
+        );
+      }
+    }
+    setState(() {
+      processing = false;
+    });
   }
 }
