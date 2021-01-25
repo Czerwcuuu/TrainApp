@@ -131,6 +131,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
   TextEditingController pass = new TextEditingController();
   FToast fToast;
 
+  //initialize FlutterToast
   @override
   void initState() {
     super.initState();
@@ -138,14 +139,18 @@ class MyCustomFormStatement extends State<MyCustomForm> {
     fToast.init(context);
   }
 
+  //login
   Future login() async {
     var url = "http://127.0.0.1/train_app_login/train_app_login.php";
     var response = await http.post(url, body: {
       "username": user.text,
       "password": pass.text,
     });
+
     var data = json.decode(response.body);
+
     if (data == "Success") {
+      // print(data[0]['id']);
       fToast.showToast(
           child: Text(
         'Logowanie powiodło się',
@@ -164,6 +169,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
     }
   }
 
+  //login form
   @override
   Widget build(BuildContext context) {
     return Scaffold(
