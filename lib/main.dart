@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:pedometer/pedometer.dart';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
 void main() => runApp(MyApp());
@@ -130,10 +127,42 @@ class MyCustomForm extends StatefulWidget {
 
 class MyCustomFormStatement extends State<MyCustomForm> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController emailController = new TextEditingController();
-  TextEditingController passwordController = new TextEditingController();
-  bool processing = false;
-  bool signin = true;
+  TextEditingController user = new TextEditingController();
+  TextEditingController pass = new TextEditingController();
+  FToast fToast;
+
+  @override
+  void initState() {
+    super.initState();
+    fToast = FToast();
+    fToast.init(context);
+  }
+
+  Future login() async {
+    var url = "http://127.0.0.1/train_app_login/train_app_login.php";
+    var response = await http.post(url, body: {
+      "username": user.text,
+      "password": pass.text,
+    });
+    var data = json.decode(response.body);
+    if (data == "Success") {
+      fToast.showToast(
+          child: Text(
+        'Logowanie powiodło się',
+        style: TextStyle(fontSize: 25, color: Colors.green),
+      ));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Home(),
+        ),
+      );
+    } else {
+      fToast.showToast(
+          child: Text('Zły login lub hasło',
+              style: TextStyle(fontSize: 25, color: Colors.red)));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +174,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               TextFormField(
-                controller: emailController,
+                controller: user,
                 textAlign: TextAlign.center,
                 validator: (value) {
                   if (value.isEmpty) {
@@ -158,7 +187,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
                 ),
               ),
               TextFormField(
-                controller: passwordController,
+                controller: pass,
                 textAlign: TextAlign.center,
                 validator: (value) {
                   if (value.isEmpty) {
@@ -183,53 +212,11 @@ class MyCustomFormStatement extends State<MyCustomForm> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.black87,
-        onPressed: () => userSignIn(),
+        onPressed: () => login(),
         tooltip: 'Zaloguj',
         child: Icon(Icons.arrow_right_rounded, size: 50),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
-  }
-
-  void changeState() {
-    if (signin) {
-      setState(() {
-        signin = false;
-      });
-    } else
-      setState(() {
-        signin = true;
-      });
-  }
-
-  void userSignIn() async {
-    setState(() {
-      processing = true;
-    });
-    var url = "http://127.0.0.1/train_app_login/train_app_login.php";
-    var data = {
-      "email": emailController.text,
-      "pass": passwordController.text,
-    };
-
-    var res = await http.post(url, body: data);
-    if (jsonDecode(res.body) == "xxx") {
-      print("nie ma takiego konta");
-    }
-    if (jsonDecode(res.body) == "false") {
-      print("wprowadziłeś złe hasło");
-    } else {
-      if (_formKey.currentState.validate()) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Home(),
-          ),
-        );
-      }
-    }
-    setState(() {
-      processing = false;
-    });
   }
 }

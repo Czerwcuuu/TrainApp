@@ -1,34 +1,19 @@
 <?php
 require_once("dbconfig.php");
 
-$email = $_POST["email"];
-$pass = $_POST["pass"];
+$username = $_POST['username'];
+$password = $_POST['password'];
 
-//check account exists
-$query = "SELECT * FROM trainapp_accounts WHERE email='test'";
-$res = mysqli_query($con,$query);
-$data = mysqli_fetch_array($res);
+$sql = "SELECT * FROM trainapp WHERE name = '".$username."' AND pass = '".$password."'";
 
-// data[0] = id, data[1] = name, data[2] = email, data[3] = password
-if($data[1]>=1){
-    //acount exists
-    $query = "SELECT * FROM trainapp_accounts WHERE pass LIKE '$pass'";
-    $res = mysqli_query($con,$query);
-    $data = mysqli_fetch_array($res);
+$result = mysqli_query($con,$sql);
+//var_dump(mysqli_error($db));
+$count = mysqli_num_rows($result);
 
-    if($data[3] == $pass){
-        // password matched
-        $resarr = array();
-        array_push($resarr,array("email"=>$data[2],"pass"=>$data[3],));
-        json_encode(array("result"=>$resarr));
-    }else{
-        echo json_encode("false");
-        //incorrect password
-    }
-
+if ($count == 1) {
+    echo json_encode("Success");
 }else{
-    echo json_encode("xxx");
-    //acount not exists, Create a new account
+    echo json_encode("Error");
 }
 
 
