@@ -7,12 +7,13 @@ $password = $_POST['password'];
 $sql = "SELECT * FROM trainapp WHERE name = '".$username."' AND pass = '".$password."'";
 
 $result = mysqli_query($con,$sql);
-$data = mysqli_fetch_array($result);
 //var_dump(mysqli_error($db));
+$data = mysqli_fetch_array($result);
 $count = mysqli_num_rows($result);
 
 if ($count == 1) {
     echo json_encode("Success");
+    
 }else{
     echo json_encode("Error");
 }

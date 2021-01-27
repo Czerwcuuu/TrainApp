@@ -48,6 +48,179 @@ class Home extends StatefulWidget {
   AnalizePage createState() => AnalizePage();
 }
 
+class Trainings {
+  final String id;
+  final String name, time;
+
+  Trainings({
+    this.id,
+    this.name,
+    //this.imageUrl,
+    this.time,
+  });
+
+  factory Trainings.fromJson(Map<String, dynamic> jsonData) {
+    return Trainings(
+      id: jsonData['id'],
+      name: jsonData['name'],
+      time: jsonData['time'],
+      //imageUrl: "http://192.168.12.2/PHP/spacecrafts/images/"+jsonData['image_url'],
+    );
+  }
+}
+
+class CustomListView extends StatelessWidget {
+  final List<Trainings> spacecrafts;
+
+  CustomListView(this.spacecrafts);
+
+  Widget build(context) {
+    return ListView.builder(
+      itemCount: spacecrafts.length,
+      itemBuilder: (context, int currentIndex) {
+        return createViewItem(spacecrafts[currentIndex], context);
+      },
+    );
+  }
+
+  Widget createViewItem(Trainings spacecraft, BuildContext context) {
+    return new ListTile(
+        title: new Card(
+          elevation: 5.0,
+          child: new Container(
+            decoration: BoxDecoration(border: Border.all(color: Colors.orange)),
+            padding: EdgeInsets.all(20.0),
+            margin: EdgeInsets.all(20.0),
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  //child: Image.network(spacecraft.imageUrl),
+                  padding: EdgeInsets.only(bottom: 8.0),
+                ),
+                Row(children: <Widget>[
+                  Padding(
+                      child: Text(
+                        spacecraft.name,
+                        style: new TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
+                      padding: EdgeInsets.all(1.0)),
+                  Text(" | "),
+                  Padding(
+                      child: Text(
+                        spacecraft.time,
+                        style: new TextStyle(fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.right,
+                      ),
+                      padding: EdgeInsets.all(1.0)),
+                ]),
+              ],
+            ),
+          ),
+        ),
+        onTap: () {
+          //We start by creating a Page Route.
+          //A MaterialPageRoute is a modal route that replaces the entire
+          //screen with a platform-adaptive transition.
+          var route = new MaterialPageRoute(
+            builder: (BuildContext context) =>
+                new SecondScreen(value: spacecraft),
+          );
+          //A Navigator is a widget that manages a set of child widgets with
+          //stack discipline.It allows us navigate pages.
+          Navigator.of(context).push(route);
+        });
+  }
+}
+
+//Future is n object representing a delayed computation.
+Future<List<Trainings>> downloadJSON() async {
+  final jsonEndpoint = "http://127.0.0.1/train_app_login/list.php";
+
+  final response = await http.post(jsonEndpoint);
+
+  if (response.statusCode == 200) {
+    List spacecrafts = json.decode(response.body);
+    return spacecrafts
+        .map((spacecraft) => new Trainings.fromJson(spacecraft))
+        .toList();
+  } else
+    throw Exception('Nie można pobrać danych json.');
+}
+
+class SecondScreen extends StatefulWidget {
+  final Trainings value;
+
+  SecondScreen({Key key, this.value}) : super(key: key);
+
+  @override
+  _SecondScreenState createState() => _SecondScreenState();
+}
+
+class _SecondScreenState extends State<SecondScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(title: new Text('Szczegóły')),
+      body: new Container(
+        child: new Center(
+          child: Column(
+            children: <Widget>[
+              Padding(
+                child: new Text(
+                  'SZCZEGÓŁY ĆWICZENIA',
+                  style: new TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 20.0),
+                  textAlign: TextAlign.center,
+                ),
+                padding: EdgeInsets.only(bottom: 20.0),
+              ),
+              Padding(
+                //child: Image.network('${widget.value.imageUrl}'),
+                padding: EdgeInsets.all(12.0),
+              ),
+              Padding(
+                child: new Text(
+                  'Nazwa Ćwiczenia : ${widget.value.name}',
+                  style: new TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.left,
+                ),
+                padding: EdgeInsets.all(20.0),
+              ),
+              Padding(
+                child: new Text(
+                  'Czas wykonywania : ${widget.value.time}',
+                  style: new TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.left,
+                ),
+                padding: EdgeInsets.all(20.0),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/*class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new MaterialApp(
+      theme: new ThemeData(
+        primarySwatch: Colors.deepOrange,
+      ),
+      home: new Scaffold(
+        appBar: new AppBar(title: const Text('MySQL Images Text')),
+        body: new Center(
+          //FutureBuilder is a widget that builds itself based on the latest snapshot
+          // of interaction with a Future.
+        ),
+      ),
+    );
+  }
+}*/
+
 class AnalizePage extends State<Home> {
   int _currentIndex = 0;
 
@@ -60,8 +233,21 @@ class AnalizePage extends State<Home> {
       ),
     ),
     Center(
-      child: Container(
-        child: Text("wpisy"),
+      child: new FutureBuilder<List<Trainings>>(
+        future: downloadJSON(),
+        //we pass a BuildContext and an AsyncSnapshot object which is an
+        //Immutable representation of the most recent interaction with
+        //an asynchronous computation.
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Trainings> spacecrafts = snapshot.data;
+            return new CustomListView(spacecrafts);
+          } else if (snapshot.hasError) {
+            return Text('${snapshot.error}');
+          }
+          //return  a circular progress indicator.
+          return new CircularProgressIndicator();
+        },
       ),
     ),
   ];
