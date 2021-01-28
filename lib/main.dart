@@ -43,11 +43,6 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-class Home extends StatefulWidget {
-  @override
-  AnalizePage createState() => AnalizePage();
-}
-
 class Trainings {
   final String id;
   final String name, time;
@@ -197,6 +192,12 @@ class _SecondScreenState extends State<SecondScreen> {
   }
 }
 
+class Home extends StatefulWidget {
+  // ignore: non_constant_identifier_names
+  @override
+  AnalizePage createState() => AnalizePage();
+}
+
 //Strona analiz
 class AnalizePage extends State<Home> {
   int _currentIndex = 0;
@@ -205,7 +206,7 @@ class AnalizePage extends State<Home> {
     Center(
       child: Container(
         child: Text(
-          "analiza",
+          MyCustomFormStatement.userId.toString(),
         ),
       ),
     ),
@@ -291,6 +292,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
   TextEditingController user = new TextEditingController();
   TextEditingController pass = new TextEditingController();
   FToast fToast;
+  static var userId;
 
   //initialize FlutterToast
   @override
@@ -312,6 +314,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
     var id = int.parse(data);
     if (id > 0) {
       //print(id);
+      userId = id;
       fToast.showToast(
           child: Text(
         'Logowanie powiodło się',
