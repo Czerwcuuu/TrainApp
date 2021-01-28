@@ -70,20 +70,20 @@ class Trainings {
 }
 
 class CustomListView extends StatelessWidget {
-  final List<Trainings> spacecrafts;
+  final List<Trainings> trainings;
 
-  CustomListView(this.spacecrafts);
+  CustomListView(this.trainings);
 
   Widget build(context) {
     return ListView.builder(
-      itemCount: spacecrafts.length,
+      itemCount: trainings.length,
       itemBuilder: (context, int currentIndex) {
-        return createViewItem(spacecrafts[currentIndex], context);
+        return createViewItem(trainings[currentIndex], context);
       },
     );
   }
 
-  Widget createViewItem(Trainings spacecraft, BuildContext context) {
+  Widget createViewItem(Trainings trainings, BuildContext context) {
     return new ListTile(
         title: new Card(
           elevation: 5.0,
@@ -100,7 +100,7 @@ class CustomListView extends StatelessWidget {
                 Row(children: <Widget>[
                   Padding(
                       child: Text(
-                        spacecraft.name,
+                        trainings.name,
                         style: new TextStyle(fontWeight: FontWeight.bold),
                         textAlign: TextAlign.right,
                       ),
@@ -108,7 +108,7 @@ class CustomListView extends StatelessWidget {
                   Text(" | "),
                   Padding(
                       child: Text(
-                        spacecraft.time,
+                        trainings.time,
                         style: new TextStyle(fontStyle: FontStyle.italic),
                         textAlign: TextAlign.right,
                       ),
@@ -119,30 +119,24 @@ class CustomListView extends StatelessWidget {
           ),
         ),
         onTap: () {
-          //We start by creating a Page Route.
-          //A MaterialPageRoute is a modal route that replaces the entire
-          //screen with a platform-adaptive transition.
           var route = new MaterialPageRoute(
             builder: (BuildContext context) =>
-                new SecondScreen(value: spacecraft),
+                new SecondScreen(value: trainings),
           );
-          //A Navigator is a widget that manages a set of child widgets with
-          //stack discipline.It allows us navigate pages.
           Navigator.of(context).push(route);
         });
   }
 }
 
-//Future is n object representing a delayed computation.
 Future<List<Trainings>> downloadJSON() async {
   final jsonEndpoint = "http://127.0.0.1/train_app_login/list.php";
 
   final response = await http.post(jsonEndpoint);
 
   if (response.statusCode == 200) {
-    List spacecrafts = json.decode(response.body);
-    return spacecrafts
-        .map((spacecraft) => new Trainings.fromJson(spacecraft))
+    List trainings = json.decode(response.body);
+    return trainings
+        .map((trainings) => new Trainings.fromJson(trainings))
         .toList();
   } else
     throw Exception('Nie można pobrać danych json.');
@@ -203,24 +197,7 @@ class _SecondScreenState extends State<SecondScreen> {
   }
 }
 
-/*class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      theme: new ThemeData(
-        primarySwatch: Colors.deepOrange,
-      ),
-      home: new Scaffold(
-        appBar: new AppBar(title: const Text('MySQL Images Text')),
-        body: new Center(
-          //FutureBuilder is a widget that builds itself based on the latest snapshot
-          // of interaction with a Future.
-        ),
-      ),
-    );
-  }
-}*/
-
+//Strona analiz
 class AnalizePage extends State<Home> {
   int _currentIndex = 0;
 
@@ -235,29 +212,25 @@ class AnalizePage extends State<Home> {
     Center(
       child: new FutureBuilder<List<Trainings>>(
         future: downloadJSON(),
-        //we pass a BuildContext and an AsyncSnapshot object which is an
-        //Immutable representation of the most recent interaction with
-        //an asynchronous computation.
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            List<Trainings> spacecrafts = snapshot.data;
-            return new CustomListView(spacecrafts);
+            List<Trainings> trainings = snapshot.data;
+            return new CustomListView(trainings);
           } else if (snapshot.hasError) {
             return Text('${snapshot.error}');
           }
-          //return  a circular progress indicator.
           return new CircularProgressIndicator();
         },
       ),
     ),
   ];
 
+//Po zalogowaniu
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       //body:
       appBar: AppBar(
-        // The title text which will be shown on the action bar
         title: Text("whatever"),
         backgroundColor: Colors.black87,
       ),
@@ -303,6 +276,8 @@ class AnalizePage extends State<Home> {
     );
   }
 }
+
+//Logowanie
 
 class MyCustomForm extends StatefulWidget {
   @override
