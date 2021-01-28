@@ -11,15 +11,12 @@ $result = mysqli_query($con,$sql);
 $data = mysqli_fetch_array($result);
 $count = mysqli_num_rows($result);
 $id = $data[0];
-$values = array(
-    0 => $data[0],
-    1 => "Success",
-);
+
 if ($count == 1) {
-    echo json_encode("Success");
+    echo json_encode(data[0]);
     
 }else{
-    echo json_encode("Error");
+    echo json_encode(0);
 }
 
 

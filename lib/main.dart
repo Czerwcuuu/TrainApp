@@ -309,9 +309,9 @@ class MyCustomFormStatement extends State<MyCustomForm> {
     });
 
     var data = json.decode(response.body);
-
-    if (data == "Success") {
-      // print(data[0]['id']);
+    var id = int.parse(data);
+    if (id > 0) {
+      //print(id);
       fToast.showToast(
           child: Text(
         'Logowanie powiodło się',
@@ -324,6 +324,7 @@ class MyCustomFormStatement extends State<MyCustomForm> {
         ),
       );
     } else {
+      //print(id);
       fToast.showToast(
           child: Text('Zły login lub hasło',
               style: TextStyle(fontSize: 25, color: Colors.red)));
