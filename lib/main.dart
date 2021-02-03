@@ -38,7 +38,7 @@ class MyHomePage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.black87,
       ),
-      body: SafeArea(child: MyCustomForm()),
+      body: SafeArea(child: LoginForm()),
     );
   }
 }
@@ -126,7 +126,9 @@ class CustomListView extends StatelessWidget {
 Future<List<Trainings>> downloadJSON() async {
   final jsonEndpoint = "http://127.0.0.1/train_app_login/list.php";
 
-  final response = await http.post(jsonEndpoint);
+  final response = await http.post(jsonEndpoint, body: {
+    "user_id": LoginFormStatement.userId.toString(),
+  });
 
   if (response.statusCode == 200) {
     List trainings = json.decode(response.body);
@@ -206,7 +208,7 @@ class AnalizePage extends State<Home> {
     Center(
       child: Container(
         child: Text(
-          MyCustomFormStatement.userId.toString(),
+          LoginFormStatement.userId.toString(),
         ),
       ),
     ),
@@ -280,14 +282,14 @@ class AnalizePage extends State<Home> {
 
 //Logowanie
 
-class MyCustomForm extends StatefulWidget {
+class LoginForm extends StatefulWidget {
   @override
-  MyCustomFormStatement createState() {
-    return MyCustomFormStatement();
+  LoginFormStatement createState() {
+    return LoginFormStatement();
   }
 }
 
-class MyCustomFormStatement extends State<MyCustomForm> {
+class LoginFormStatement extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController user = new TextEditingController();
   TextEditingController pass = new TextEditingController();
