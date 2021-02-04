@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_sparkline/flutter_sparkline.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
@@ -214,15 +216,24 @@ class Home extends StatefulWidget {
 //Strona analiz/wpisów
 class AnalizePage extends State<Home> {
   int _currentIndex = 0;
+  //*do testowego grafu
+  static var data = [0.0, 1.0, 1.5, 2.0, 0.0, 0.0, -0.5];
 
   final tabs = [
+    //Grafy/analiza
     Center(
       child: Container(
-        child: Text(
-          LoginFormStatement.userId.toString(),
+        child: new Container(
+          child: new Sparkline(
+            data: data,
+            pointsMode: PointsMode.all,
+            pointSize: 8.0,
+            pointColor: Colors.amber,
+          ),
         ),
       ),
     ),
+    //Lista treningów
     Center(
       child: new FutureBuilder<List<Trainings>>(
         future: downloadJSON(),
