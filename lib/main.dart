@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       // Application name
-      title: 'Flutter Hello World',
+      title: 'TrainApp',
       // Application theme data, you can set the colors for the application as
       // you want
       theme: ThemeData(
@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+//strona główna (logowanie)
 class MyHomePage extends StatelessWidget {
   final String title;
 
@@ -37,12 +38,15 @@ class MyHomePage extends StatelessWidget {
         title: Text(title),
         centerTitle: true,
         backgroundColor: Colors.black87,
+        automaticallyImplyLeading: false,
       ),
       body: SafeArea(child: LoginForm()),
     );
   }
 }
+//
 
+//lista treningów (wpisy)
 class Trainings {
   final String id;
   final String name, time;
@@ -138,7 +142,9 @@ Future<List<Trainings>> downloadJSON() async {
   } else
     throw Exception('Nie można pobrać danych json.');
 }
+//
 
+// Szczegóły Ćwiczeń
 class SecondScreen extends StatefulWidget {
   final Trainings value;
 
@@ -152,7 +158,11 @@ class _SecondScreenState extends State<SecondScreen> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(title: new Text('Szczegóły')),
+      appBar: new AppBar(
+        title: new Text('Szczegóły'),
+        centerTitle: true,
+        backgroundColor: Colors.black87,
+      ),
       body: new Container(
         child: new Center(
           child: Column(
@@ -193,6 +203,7 @@ class _SecondScreenState extends State<SecondScreen> {
     );
   }
 }
+//
 
 class Home extends StatefulWidget {
   // ignore: non_constant_identifier_names
@@ -200,7 +211,7 @@ class Home extends StatefulWidget {
   AnalizePage createState() => AnalizePage();
 }
 
-//Strona analiz
+//Strona analiz/wpisów
 class AnalizePage extends State<Home> {
   int _currentIndex = 0;
 
@@ -234,9 +245,25 @@ class AnalizePage extends State<Home> {
     return Scaffold(
       //body:
       appBar: AppBar(
-        title: Text("whatever"),
-        backgroundColor: Colors.black87,
-      ),
+          automaticallyImplyLeading: false,
+          title: Text("Witaj w TrainApp!"),
+          centerTitle: true,
+          backgroundColor: Colors.black87,
+          leading: FloatingActionButton(
+              heroTag: "LogoutButton",
+              tooltip: 'Wyloguj',
+              backgroundColor: Colors.black87,
+              onPressed: () => {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyHomePage(title: 'TrainApp'),
+                      ),
+                    ),
+                  },
+              child: Icon(
+                Icons.backspace,
+              ))),
 
       body: tabs[_currentIndex],
 
@@ -249,7 +276,7 @@ class AnalizePage extends State<Home> {
               Icons.tab_sharp,
               color: Colors.white,
             ),
-            label: 'test',
+            label: 'Analiza',
             backgroundColor: Colors.yellow,
           ),
           BottomNavigationBarItem(
@@ -257,7 +284,7 @@ class AnalizePage extends State<Home> {
               Icons.tab_sharp,
               color: Colors.white,
             ),
-            label: 'test',
+            label: 'Wpisy',
             backgroundColor: Colors.red,
           ),
         ],
@@ -269,9 +296,17 @@ class AnalizePage extends State<Home> {
       ),
 
       floatingActionButton: FloatingActionButton(
+        heroTag: "AddTrainingButton",
         backgroundColor: Colors.black87,
-        onPressed: () {},
-        tooltip: 'Zaloguj',
+        onPressed: () => {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateNewTraining(),
+            ),
+          ),
+        },
+        tooltip: 'Nowy Wpis',
         child: Icon(Icons.add, size: 50),
       ),
 
@@ -279,9 +314,165 @@ class AnalizePage extends State<Home> {
     );
   }
 }
+//
+
+//Dodawanie nowego treningu
+class CreateNewTraining extends StatefulWidget {
+  @override
+  CreateNewTrainingStatement createState() {
+    return CreateNewTrainingStatement();
+  }
+}
+
+class CreateNewTrainingStatement extends State<CreateNewTraining> {
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController name = new TextEditingController();
+  TextEditingController attemps = new TextEditingController();
+  TextEditingController time = new TextEditingController();
+  TextEditingController amount = new TextEditingController();
+  FToast fToast;
+
+  //initialize FlutterToast
+  @override
+  void initState() {
+    super.initState();
+    fToast = FToast();
+    fToast.init(context);
+  }
+
+  //login
+  Future add() async {
+    var url = "http://127.0.0.1/train_app_login/train_app_newTraining.php";
+    var response = await http.post(url, body: {
+      "id": LoginFormStatement.userId.toString(),
+      "name": name.text,
+      "time": time.text,
+      "attemps": attemps.text,
+      "amount": amount.text,
+    });
+
+    print(name.text);
+    print(time.text);
+    print(attemps.text);
+    print(amount.text);
+    print(LoginFormStatement.userId.toString());
+    var data;
+    if (response.body.isNotEmpty) {
+      data = json.decode(response.body);
+    }
+    if (data == "error") {
+      fToast.showToast(
+          child: Text('Wystąpił Błąd',
+              style: TextStyle(fontSize: 25, color: Colors.red)));
+    } else {
+      fToast.showToast(
+          child: Text(
+        'Dodano Nowy Wpis',
+        style: TextStyle(fontSize: 25, color: Colors.green),
+      ));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Home(),
+        ),
+      );
+    }
+  }
+
+  //login form
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Dodaj Ćwiczenie"),
+        backgroundColor: Colors.black87,
+      ),
+      body: Container(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              //Nazwa
+              TextFormField(
+                controller: name,
+                textAlign: TextAlign.center,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Nazwa ćwiczenia nie została wprowadzona!';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: 'Nazwa Ćwiczenia',
+                ),
+              ),
+              //Serie
+              TextFormField(
+                controller: attemps,
+                textAlign: TextAlign.center,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Ilość serii nie została wprowadzona!';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: 'Serie',
+                ),
+              ),
+              //Czas ćwiczenia
+              TextFormField(
+                controller: time,
+                textAlign: TextAlign.center,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Długośc ćwiczenia nie została wprowadzona!';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: 'Długość Ćwiczenia',
+                ),
+              ),
+              //Ilość wykonanych ćwiczeń
+              TextFormField(
+                controller: amount,
+                textAlign: TextAlign.center,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Ilość wykonywanych ćwiczeń nie została wprowadzona!';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: 'Ilość wykonanych ćwiczeń',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        color: Colors.black87,
+        child: Container(
+          height: 65.0,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black87,
+        onPressed: () => add(),
+        tooltip: 'Dodaj',
+        child: Icon(Icons.add, size: 50),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+}
+//
 
 //Logowanie
-
 class LoginForm extends StatefulWidget {
   @override
   LoginFormStatement createState() {
@@ -317,11 +508,6 @@ class LoginFormStatement extends State<LoginForm> {
     if (id > 0) {
       //print(id);
       userId = id;
-      fToast.showToast(
-          child: Text(
-        'Logowanie powiodło się',
-        style: TextStyle(fontSize: 25, color: Colors.green),
-      ));
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -393,3 +579,4 @@ class LoginFormStatement extends State<LoginForm> {
     );
   }
 }
+//
