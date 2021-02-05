@@ -51,13 +51,16 @@ class MyHomePage extends StatelessWidget {
 //lista treningów (wpisy)
 class Trainings {
   final String id;
-  final String name, time;
+  final String name, time, attemps, amount, date;
 
   Trainings({
     this.id,
     this.name,
     //this.imageUrl,
     this.time,
+    this.attemps,
+    this.amount,
+    this.date,
   });
 
   factory Trainings.fromJson(Map<String, dynamic> jsonData) {
@@ -65,6 +68,9 @@ class Trainings {
       id: jsonData['id'],
       name: jsonData['name'],
       time: jsonData['time'],
+      attemps: jsonData['attemps'],
+      amount: jsonData['amount'],
+      date: jsonData['date'],
       //imageUrl: "http://192.168.12.2/PHP/spacecrafts/images/"+jsonData['image_url'],
     );
   }
@@ -74,11 +80,13 @@ class Properties {
   final String row;
   final String cwiczenie;
   final String ilecwiczenie;
+  final String ostatniadata;
 
   Properties({
     this.row,
     this.cwiczenie,
     this.ilecwiczenie,
+    this.ostatniadata,
     //this.imageUrl,
   });
 
@@ -87,6 +95,7 @@ class Properties {
       row: jsonData['row'],
       cwiczenie: jsonData['cwiczenie'],
       ilecwiczenie: jsonData['ilecwiczenie'],
+      ostatniadata: jsonData['ostatniadata'],
 
       //imageUrl: "http://192.168.12.2/PHP/spacecrafts/images/"+jsonData['image_url'],
     );
@@ -132,11 +141,19 @@ class CustomListView extends StatelessWidget {
                   Text(" | "),
                   Padding(
                       child: Text(
-                        trainings.time,
+                        trainings.time + " minut",
                         style: new TextStyle(fontStyle: FontStyle.italic),
                         textAlign: TextAlign.right,
                       ),
                       padding: EdgeInsets.all(1.0)),
+                  Text(" | "),
+                  Padding(
+                      child: Text(
+                        trainings.date.toString(),
+                        style: new TextStyle(fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.right,
+                      ),
+                      padding: EdgeInsets.all(1.0))
                 ]),
               ],
             ),
@@ -189,14 +206,6 @@ class CustomPropView extends StatelessWidget {
                       textAlign: TextAlign.right,
                     ),
                     padding: EdgeInsets.all(1.0)),
-
-                /*Padding(
-                      child: Text(
-                        trainings.time,
-                        style: new TextStyle(fontStyle: FontStyle.italic),
-                        textAlign: TextAlign.right,
-                      ),
-                      padding: EdgeInsets.all(1.0)),*/
               ]),
               Padding(
                 //child: Image.network(spacecraft.imageUrl),
@@ -211,14 +220,6 @@ class CustomPropView extends StatelessWidget {
                       textAlign: TextAlign.right,
                     ),
                     padding: EdgeInsets.all(1.0)),
-
-                /*Padding(
-                      child: Text(
-                        trainings.time,
-                        style: new TextStyle(fontStyle: FontStyle.italic),
-                        textAlign: TextAlign.right,
-                      ),
-                      padding: EdgeInsets.all(1.0)),*/
               ]),
               Padding(
                 //child: Image.network(spacecraft.imageUrl),
@@ -233,14 +234,20 @@ class CustomPropView extends StatelessWidget {
                       textAlign: TextAlign.right,
                     ),
                     padding: EdgeInsets.all(1.0)),
-
-                /*Padding(
-                      child: Text(
-                        trainings.time,
-                        style: new TextStyle(fontStyle: FontStyle.italic),
-                        textAlign: TextAlign.right,
-                      ),
-                      padding: EdgeInsets.all(1.0)),*/
+              ]),
+              Padding(
+                //child: Image.network(spacecraft.imageUrl),
+                padding: EdgeInsets.only(bottom: 8.0),
+              ),
+              Row(children: <Widget>[
+                Text('Ostatnio ćwiczyłeś dnia:'),
+                Padding(
+                    child: Text(
+                      properties.ostatniadata,
+                      style: new TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.right,
+                    ),
+                    padding: EdgeInsets.all(1.0)),
               ]),
             ],
           ),
@@ -330,7 +337,23 @@ class _SecondScreenState extends State<SecondScreen> {
               ),
               Padding(
                 child: new Text(
-                  'Czas wykonywania : ${widget.value.time}',
+                  'Czas wykonywania : ${widget.value.time} minut',
+                  style: new TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.left,
+                ),
+                padding: EdgeInsets.all(20.0),
+              ),
+              Padding(
+                child: new Text(
+                  'Serie : ${widget.value.attemps}',
+                  style: new TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.left,
+                ),
+                padding: EdgeInsets.all(20.0),
+              ),
+              Padding(
+                child: new Text(
+                  'Ilość : ${widget.value.amount}',
                   style: new TextStyle(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.left,
                 ),
