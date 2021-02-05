@@ -70,6 +70,29 @@ class Trainings {
   }
 }
 
+class Properties {
+  final String row;
+  final String cwiczenie;
+  final String ilecwiczenie;
+
+  Properties({
+    this.row,
+    this.cwiczenie,
+    this.ilecwiczenie,
+    //this.imageUrl,
+  });
+
+  factory Properties.fromJson(Map<String, dynamic> jsonData) {
+    return Properties(
+      row: jsonData['row'],
+      cwiczenie: jsonData['cwiczenie'],
+      ilecwiczenie: jsonData['ilecwiczenie'],
+
+      //imageUrl: "http://192.168.12.2/PHP/spacecrafts/images/"+jsonData['image_url'],
+    );
+  }
+}
+
 class CustomListView extends StatelessWidget {
   final List<Trainings> trainings;
 
@@ -129,6 +152,104 @@ class CustomListView extends StatelessWidget {
   }
 }
 
+class CustomPropView extends StatelessWidget {
+  final List<Properties> properties;
+
+  CustomPropView(this.properties);
+
+  Widget build(context) {
+    return ListView.builder(
+      itemCount: properties.length,
+      itemBuilder: (context, int currentIndex) {
+        return createViewItem(properties[currentIndex], context);
+      },
+    );
+  }
+
+  Widget createViewItem(Properties properties, BuildContext context) {
+    return new ListTile(
+      title: new Card(
+        elevation: 5.0,
+        child: new Container(
+          decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+          padding: EdgeInsets.all(20.0),
+          margin: EdgeInsets.all(20.0),
+          child: Column(
+            children: <Widget>[
+              Padding(
+                //child: Image.network(spacecraft.imageUrl),
+                padding: EdgeInsets.only(bottom: 8.0),
+              ),
+              Row(children: <Widget>[
+                Text('Wykonanych treningów:'),
+                Padding(
+                    child: Text(
+                      properties.row.toString(),
+                      style: new TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.right,
+                    ),
+                    padding: EdgeInsets.all(1.0)),
+
+                /*Padding(
+                      child: Text(
+                        trainings.time,
+                        style: new TextStyle(fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.right,
+                      ),
+                      padding: EdgeInsets.all(1.0)),*/
+              ]),
+              Padding(
+                //child: Image.network(spacecraft.imageUrl),
+                padding: EdgeInsets.only(bottom: 8.0),
+              ),
+              Row(children: <Widget>[
+                Text('Najczęściej wykonujesz:'),
+                Padding(
+                    child: Text(
+                      properties.cwiczenie,
+                      style: new TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.right,
+                    ),
+                    padding: EdgeInsets.all(1.0)),
+
+                /*Padding(
+                      child: Text(
+                        trainings.time,
+                        style: new TextStyle(fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.right,
+                      ),
+                      padding: EdgeInsets.all(1.0)),*/
+              ]),
+              Padding(
+                //child: Image.network(spacecraft.imageUrl),
+                padding: EdgeInsets.only(bottom: 8.0),
+              ),
+              Row(children: <Widget>[
+                Text('Wykonałeś to ćwiczenie już:'),
+                Padding(
+                    child: Text(
+                      properties.ilecwiczenie.toString() + " razy",
+                      style: new TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.right,
+                    ),
+                    padding: EdgeInsets.all(1.0)),
+
+                /*Padding(
+                      child: Text(
+                        trainings.time,
+                        style: new TextStyle(fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.right,
+                      ),
+                      padding: EdgeInsets.all(1.0)),*/
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 Future<List<Trainings>> downloadJSON() async {
   final jsonEndpoint = "http://127.0.0.1/train_app_login/list.php";
 
@@ -145,6 +266,23 @@ Future<List<Trainings>> downloadJSON() async {
     throw Exception('Nie można pobrać danych json.');
 }
 //
+
+Future<List<Properties>> downloadProperties() async {
+  final jsonEndpoint =
+      "http://127.0.0.1/train_app_login/train_app_properties.php";
+
+  final response = await http.post(jsonEndpoint, body: {
+    "user_id": LoginFormStatement.userId.toString(),
+  });
+
+  if (response.statusCode == 200) {
+    List properties = json.decode(response.body);
+    return properties
+        .map((properties) => new Properties.fromJson(properties))
+        .toList();
+  } else
+    throw Exception('Nie można pobrać danych json.');
+}
 
 // Szczegóły Ćwiczeń
 class SecondScreen extends StatefulWidget {
@@ -223,14 +361,17 @@ class AnalizePage extends State<Home> {
     //Grafy/analiza
     Center(
       child: Container(
-        child: new Container(
-          child: new Sparkline(
-            data: data,
-            pointsMode: PointsMode.all,
-            pointSize: 8.0,
-            pointColor: Colors.amber,
-          ),
-        ),
+        child: new FutureBuilder<List<Properties>>(
+            future: downloadProperties(),
+            // ignore: missing_return
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                List<Properties> properties = snapshot.data;
+                return new CustomPropView(properties);
+              } else if (snapshot.hasError) {
+                return Text('test');
+              }
+            }),
       ),
     ),
     //Lista treningów
