@@ -335,6 +335,24 @@ class CreateNewTraining extends StatefulWidget {
   }
 }
 
+class TrainingToSelect {
+  int id;
+  String name;
+
+  TrainingToSelect(this.id, this.name);
+
+  static List<TrainingToSelect> getTrainings() {
+    return <TrainingToSelect>[
+      TrainingToSelect(1, 'Bieganie'),
+      TrainingToSelect(2, 'Ciężarki'),
+      TrainingToSelect(3, 'Bieżnia'),
+      TrainingToSelect(4, 'Pływanie'),
+      TrainingToSelect(5, 'Skłony'),
+      TrainingToSelect(6, 'Przysiady'),
+    ];
+  }
+}
+
 class CreateNewTrainingStatement extends State<CreateNewTraining> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController name = new TextEditingController();
@@ -343,12 +361,38 @@ class CreateNewTrainingStatement extends State<CreateNewTraining> {
   TextEditingController amount = new TextEditingController();
   FToast fToast;
 
+  List<TrainingToSelect> _trainings = TrainingToSelect.getTrainings();
+  List<DropdownMenuItem<TrainingToSelect>> _dropdownMenuItems;
+  TrainingToSelect _selectedTraining;
+
   //initialize FlutterToast
   @override
   void initState() {
+    _dropdownMenuItems = buildDropdownMenuItems(_trainings);
+    _selectedTraining = _dropdownMenuItems[0].value;
     super.initState();
     fToast = FToast();
     fToast.init(context);
+  }
+
+  onChangeDropdownItem(TrainingToSelect selectedTraining) {
+    setState(() {
+      _selectedTraining = selectedTraining;
+    });
+  }
+
+  List<DropdownMenuItem<TrainingToSelect>> buildDropdownMenuItems(
+      List trainings) {
+    List<DropdownMenuItem<TrainingToSelect>> items = List();
+    for (TrainingToSelect training in trainings) {
+      items.add(
+        DropdownMenuItem(
+          value: training,
+          child: Text(training.name),
+        ),
+      );
+    }
+    return items;
   }
 
   //login
@@ -356,13 +400,13 @@ class CreateNewTrainingStatement extends State<CreateNewTraining> {
     var url = "http://127.0.0.1/train_app_login/train_app_newTraining.php";
     var response = await http.post(url, body: {
       "id": LoginFormStatement.userId.toString(),
-      "name": name.text,
+      "name": _selectedTraining.name.toString(),
       "time": time.text,
       "attemps": attemps.text,
       "amount": amount.text,
     });
 
-    print(name.text);
+    print(_selectedTraining.name.toString());
     print(time.text);
     print(attemps.text);
     print(amount.text);
@@ -402,21 +446,29 @@ class CreateNewTrainingStatement extends State<CreateNewTraining> {
         child: Form(
           key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               //Nazwa
-              TextFormField(
-                controller: name,
-                textAlign: TextAlign.center,
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Nazwa ćwiczenia nie została wprowadzona!';
-                  }
-                  return null;
-                },
-                decoration: InputDecoration(
-                  hintText: 'Nazwa Ćwiczenia',
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text("Wybierz Ćwiczenie"),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  DropdownButton(
+                    value: _selectedTraining,
+                    items: _dropdownMenuItems,
+                    onChanged: onChangeDropdownItem,
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  Text(
+                    'Wybrane: ${_selectedTraining.name}',
+                  ),
+                ],
               ),
               //Serie
               TextFormField(
